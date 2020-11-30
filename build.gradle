@@ -1,0 +1,121 @@
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven {
+            name = 'yopoyka'
+            url = 'https://github.com/yopoyka/maven/raw/maven'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+
+def hasCoremod() {
+    return project.hasProperty('coremod') && coremod != null;
+}
+
+apply plugin: 'forge'
+apply plugin: 'maven-publish'
+
+version = "1.0"
+group= "yopoyka.mc"
+ext.modid = "brigadier"
+ext.modname = "Brigadier"
+archivesBaseName = modid
+sourceCompatibility = targetCompatibility = 1.8
+ext.coremod = hasCoremod() ? coremod : 'yopoyka.brigadier.coremod.Plugin'
+compileJava.options.encoding = 'UTF-8'
+
+minecraft {
+    version = "1.7.10-10.13.4.1614-1.7.10"
+    mappings = 'stable_12'
+}
+
+jar {
+    manifest {
+        if (hasCoremod()) {
+            attributes 'FMLCorePlugin': coremod
+            attributes 'FMLCorePluginContainsFMLMod': 'true'
+        }
+        attributes 'FMLAT': 'brigadier_at.cfg'
+    }
+}
+
+runClient {
+    args += ['--username', project.hasProperty('mcname') ? project.getProperty('mcname') : 'Dev']
+    if (hasCoremod()) {
+        systemProperty 'fml.coreMods.load', coremod
+    }
+}
+
+runServer {
+    if (hasCoremod()) {
+        systemProperty 'fml.coreMods.load', coremod
+    }
+    args += ['nogui']
+}
+
+processResources
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.modid, 'modname':project.modname
+    }
+
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+task srcJar(type: Jar) {
+    from sourceSets.main.java
+    from sourceSets.main.resources
+    classifier = 'sources'
+}
+
+artifacts {
+    archives srcJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository url: 'file://' + project.file('repo')
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url = project.file('repo')
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = archivesBaseName
+            version = project.version
+
+            from components.java
+        }
+    }
+}

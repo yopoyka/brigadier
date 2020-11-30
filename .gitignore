@@ -1,0 +1,9 @@
+.gradle
+.idea
+.settings
+.project
+.classpath
+eclipse
+run
+build
+repo
