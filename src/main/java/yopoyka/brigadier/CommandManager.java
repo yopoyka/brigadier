@@ -2,14 +2,18 @@ package yopoyka.brigadier;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.util.*;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.CommandEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import yopoyka.brigadier.com.mojang.brigadier.CommandDispatcher;
-import yopoyka.brigadier.com.mojang.brigadier.Message;
 import yopoyka.brigadier.com.mojang.brigadier.StringReader;
 import yopoyka.brigadier.com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import yopoyka.brigadier.event.CommandWrapper;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +22,7 @@ import java.util.function.Supplier;
 public class CommandManager implements ICommandManager {
     protected final Supplier<CommandDispatcher<ICommandSender>> dispatcher;
     protected final ICommandManager delegate;
+    protected static final Logger logger = LogManager.getLogger("Brigadier");
 
     public CommandManager(ICommandManager delegate, Supplier<CommandDispatcher<ICommandSender>> dispatcher) {
         this.delegate = delegate;
@@ -33,6 +38,15 @@ public class CommandManager implements ICommandManager {
 
         MinecraftServer.getServer().theProfiler.startSection(input);
         try {
+            final CommandEvent event = new CommandEvent(new CommandWrapper(input.substring(1, reader.getCursor())), sender, new String[0]);
+
+            if (MinecraftForge.EVENT_BUS.post(event)) {
+                if (event.exception != null)
+                    throw event.exception;
+
+                return 1;
+            }
+
             return dispatcher.get().execute(reader, sender);
         } catch (CommandException e) {
             final ChatComponentTranslation message = new ChatComponentTranslation(e.getMessage(), e.getErrorOjbects());
@@ -51,6 +65,9 @@ public class CommandManager implements ICommandManager {
                 else
                     sender.addChatMessage(new ChatComponentText(e.getMessage()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
             }
+        } catch (Throwable t) {
+            sender.addChatMessage(new ChatComponentTranslation("commands.generic.exception").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+            logger.error("Couldn't process command: '" + input + "'", t);
         } finally {
             MinecraftServer.getServer().theProfiler.endSection();
         }
