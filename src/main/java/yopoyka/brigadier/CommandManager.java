@@ -38,15 +38,6 @@ public class CommandManager implements ICommandManager {
 
         MinecraftServer.getServer().theProfiler.startSection(input);
         try {
-            final CommandEvent event = new CommandEvent(new CommandWrapper(input.substring(1, reader.getCursor())), sender, new String[0]);
-
-            if (MinecraftForge.EVENT_BUS.post(event)) {
-                if (event.exception != null)
-                    throw event.exception;
-
-                return 1;
-            }
-
             return dispatcher.get().execute(reader, sender);
         } catch (CommandException e) {
             final ChatComponentTranslation message = new ChatComponentTranslation(e.getMessage(), e.getErrorOjbects());
