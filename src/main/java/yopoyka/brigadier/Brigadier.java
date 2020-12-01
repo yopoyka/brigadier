@@ -20,7 +20,7 @@ import static yopoyka.brigadier.Commands.literal;
 @Mod(modid = Brigadier.MODID, version = Brigadier.VERSION, name = Brigadier.NAME, acceptableRemoteVersions = "*")
 public final class Brigadier {
     public static final String MODID = "brigadier";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.0.1";
     public static final String NAME = "Brigadier";
     private static CommandDispatcher<ICommandSender> commandDispatcher = new CommandDispatcher<>();
 
