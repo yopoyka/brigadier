@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import yopoyka.brigadier.com.mojang.brigadier.exceptions.CommandSyntaxException;
 import yopoyka.brigadier.com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import static yopoyka.brigadier.Commands.literal;
@@ -45,6 +46,8 @@ public final class Brigadier {
                 MinecraftServer.getServer().getCommandManager(),
                 Brigadier::getDispatcher
         );
+        System.out.println(getDispatcher().getSmartUsage(getDispatcher().getRoot(), MinecraftServer.getServer()));
+        System.out.println(Arrays.toString(getDispatcher().getAllUsage(getDispatcher().getRoot(), MinecraftServer.getServer(), true)));
     }
 
     public static CommandDispatcher<ICommandSender> getDispatcher() {

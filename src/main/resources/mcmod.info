@@ -3,7 +3,7 @@
   "modid": "brigadier",
   "name": "Brigadier",
   "description": "Make commands with ease",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "mcversion": "1.7.10",
   "url": "",
   "updateUrl": "",
