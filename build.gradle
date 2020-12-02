@@ -28,7 +28,7 @@ def hasCoremod() {
 apply plugin: 'forge'
 apply plugin: 'maven-publish'
 
-version = "1.0.4"
+version = "1.0.5"
 group= "yopoyka.mc"
 ext.modid = "brigadier"
 ext.modname = "Brigadier"
