@@ -14,14 +14,7 @@ import yopoyka.brigadier.com.mojang.brigadier.tree.CommandNode;
 import yopoyka.brigadier.com.mojang.brigadier.tree.LiteralCommandNode;
 import yopoyka.brigadier.com.mojang.brigadier.tree.RootCommandNode;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -105,6 +98,10 @@ public class CommandDispatcher<S> {
      */
     public void setConsumer(final ResultConsumer<S> consumer) {
         this.consumer = consumer;
+    }
+
+    public ResultConsumer<S> getConsumer() {
+        return consumer;
     }
 
     /**
@@ -278,7 +275,7 @@ public class CommandDispatcher<S> {
 
         if (!foundCommand) {
             consumer.onCommandComplete(original, false, 0);
-            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(parse.getReader());
+            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherIncompleteCommand().createWithContext(parse.getReader());
         }
 
         return forked ? successfulForks : result;
@@ -588,17 +585,19 @@ public class CommandDispatcher<S> {
 
         final String fullInput = parse.getReader().getString();
         final String truncatedInput = fullInput.substring(0, cursor);
-        @SuppressWarnings("unchecked") final CompletableFuture<Suggestions>[] futures = new CompletableFuture[parent.getChildren().size()];
-        int i = 0;
+        final List<CompletableFuture<Suggestions>> futuresList = new LinkedList<>();
         for (final CommandNode<S> node : parent.getChildren()) {
-            CompletableFuture<Suggestions> future = Suggestions.empty();
-            try {
-                future = node.listSuggestions(context.build(truncatedInput), new SuggestionsBuilder(truncatedInput, start));
-            } catch (final CommandSyntaxException ignored) {
+            if (node.getRequirement().test(context.getSource())) {
+                CompletableFuture<Suggestions> future = Suggestions.empty();
+                try {
+                    future = node.listSuggestions(context.build(truncatedInput), new SuggestionsBuilder(truncatedInput, start));
+                } catch (final CommandSyntaxException ignored) {
+                }
+                futuresList.add(future);
             }
-            futures[i++] = future;
         }
 
+        final CompletableFuture<Suggestions>[] futures = futuresList.toArray(new CompletableFuture[0]);
         final CompletableFuture<Suggestions> result = new CompletableFuture<>();
         CompletableFuture.allOf(futures).thenRun(() -> {
             final List<Suggestions> suggestions = new ArrayList<>();
