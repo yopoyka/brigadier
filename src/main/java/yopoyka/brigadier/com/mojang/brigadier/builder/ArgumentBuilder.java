@@ -80,6 +80,7 @@ public abstract class ArgumentBuilder<S, T extends ArgumentBuilder<S, T>> {
         this.target = target;
         this.modifier = modifier;
         this.forks = fork;
+        this.command = target.getCommand();
         return getThis();
     }
 
