@@ -36,6 +36,7 @@ public class BuiltInExceptions implements BuiltInExceptionProvider {
     private static final DynamicCommandExceptionType READER_EXPECTED_SYMBOL = new DynamicCommandExceptionType(symbol -> new LiteralMessage("Expected '" + symbol + "'"));
 
     private static final SimpleCommandExceptionType DISPATCHER_UNKNOWN_COMMAND = new SimpleCommandExceptionType(new LiteralMessage("Unknown command"));
+    private static final SimpleCommandExceptionType DISPATCHER_INCOMPLETE_COMMAND = new SimpleCommandExceptionType(new LiteralMessage("Incomplete command"));
     private static final SimpleCommandExceptionType DISPATCHER_UNKNOWN_ARGUMENT = new SimpleCommandExceptionType(new LiteralMessage("Incorrect argument for command"));
     private static final SimpleCommandExceptionType DISPATCHER_EXPECTED_ARGUMENT_SEPARATOR = new SimpleCommandExceptionType(new LiteralMessage("Expected whitespace to end one argument, but found trailing data"));
     private static final DynamicCommandExceptionType DISPATCHER_PARSE_EXCEPTION = new DynamicCommandExceptionType(message -> new LiteralMessage("Could not parse command: " + message));
@@ -158,6 +159,11 @@ public class BuiltInExceptions implements BuiltInExceptionProvider {
     @Override
     public SimpleCommandExceptionType dispatcherUnknownCommand() {
         return DISPATCHER_UNKNOWN_COMMAND;
+    }
+
+    @Override
+    public SimpleCommandExceptionType dispatcherIncompleteCommand() {
+        return DISPATCHER_INCOMPLETE_COMMAND;
     }
 
     @Override

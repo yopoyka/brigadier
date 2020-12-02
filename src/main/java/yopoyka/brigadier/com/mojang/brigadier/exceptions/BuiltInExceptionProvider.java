@@ -52,6 +52,8 @@ public interface BuiltInExceptionProvider {
 
     SimpleCommandExceptionType dispatcherUnknownCommand();
 
+    SimpleCommandExceptionType dispatcherIncompleteCommand();
+
     SimpleCommandExceptionType dispatcherUnknownArgument();
 
     SimpleCommandExceptionType dispatcherExpectedArgumentSeparator();
